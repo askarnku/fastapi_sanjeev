@@ -28,7 +28,7 @@ docker exec -it 05b5 /bin/bash
 
 psql -h localhost -p 5432 -U postgres
 
--------------
+-----------------------------------------
 how to connect to DB
 
 import psycopg2
@@ -83,3 +83,43 @@ def get_post(id: int):
             status_code=status.HTTP_404_NOT_FOUND, detail="post not found"
         )
     return {"post_detail": post}
+
+
+DELETING a record:
+def delete_post(id: int):
+    cursor.execute(""" DELETE FROM posts WHERE id = %s RETURNING *""", (id,))
+    deleted_post = cursor.fetchone()
+    if not deleted_post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="post not found"
+        )
+    conn.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+#updating a post:
+@app.put("/posts/{id}", status_code=status.HTTP_202_ACCEPTED)
+def update_post(id: int, post: Post):
+    # client is sending id of the post and requesting to update that post with new body
+    # 1. convert to dictionary the response body
+
+    cursor.execute(
+        """ UPDATE posts SET title = %s, content = %s, published = %s
+                    WHERE id = %s
+                    RETURNING * """,
+        (
+            post.title,
+            post.content,
+            post.published,
+            id,
+        ),
+    )
+    updated_post = cursor.fetchone()
+
+    if not updated_post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Post with id: {id} was not found",
+        )
+    conn.commit()
+    return {"message": f"post with id: {id} was updated"}

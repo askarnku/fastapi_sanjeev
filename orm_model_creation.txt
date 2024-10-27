@@ -1,0 +1,105 @@
+1. Created seperate file: database.py
+
+2. In it, import:
+
+    from sqlalchemy import create_engine
+    from sqlalchemy.ext.declarative import declarative_base
+    from sqlalchemy.orm import sessionmaker
+
+3. Defined SQLALCHEMY_URL: "postgresql://<username>:<password>@<host-ip>/<db-name>"
+
+4. Created engine:
+    engine = create_engine(SQLALCHEMY_URL)
+
+5. Create SessionLocal #I'm guessing it is for each session when updating or fetching data from db:
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+6. Base = declarative_base() # this is for create base model to extend by our models
+
+Then create seperate file, called models.py . This is where we keep tables and their schemas in.
+This is how we create models:
+
+    imports: 
+        from .database import Base
+        from sqlalchemy import Column, Integer, String, Boolean
+
+    actual model of the table named 'posts' extends Base from sqlalchemy:
+
+        class Post(Base):
+        __tablename__ = "posts"
+
+        id = Column(Integer, primary_key=True, nullable=False)
+        title = Column(String, nullable=False)
+        content = Column(String, nullable=False)
+        published = Column(Boolean, default=True)
+
+
+Then in main.py, where we keep all our routes at this stage, we created 
+
+models.Base.metadata.create_all(bind=engine)
+
+
+
+-----------------
+HOW it is done on @app.route()
+
+fetch all posts from db:
+    @app.get("/posts")
+    def root(db: Session = Depends(get_db)):
+        posts = db.query(models.Post).all() --> this is ORM alchemy query
+        return {"data": posts}
+
+POST:
+    @app.post("/posts", status_code=status.HTTP_201_CREATED)
+    def create_posts(post: Post, db: Session = Depends(get_db)):
+        new_post = models.Post(**post.model_dump()) --> since post: Post is a pydentic model, it is smeared into models.Post 
+        db.add(new_post)
+        db.commit()
+        db.refresh(new_post)
+        return {"data": new_post}
+
+Get an individual post:
+    @app.get("/posts/{id}")
+    def get_post(id: int, db: Session = Depends(get_db)):
+        post = db.query(models.Post).filter(models.Post.id == id).first()
+        if not post:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="post not found"
+            )
+        return {"post_detail": post}
+
+DELETE:
+    @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
+    def delete_post(id: int, db: Session = Depends(get_db)):
+        post = db.query(models.Post).filter(models.Post.id == id)
+
+        if not post.first():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="post not found"
+            )
+        post.delete(synchronize_session=False)
+        db.commit()
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+
+UPDATE:
+    @app.put("/posts/{id}", status_code=status.HTTP_202_ACCEPTED)
+    def update_post(id: int, post: Post, db: Session = Depends(get_db)):
+
+        post_query = db.query(models.Post).filter(models.Post.id == id)
+        existing_post = post_query.first()
+
+        if existing_post is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Post with id: {id} was not found",
+            )
+
+        # update
+        # commit
+        # refresh
+        post_query.update(post.model_dump(), synchronize_session=False)
+        db.commit()
+        db.refresh(existing_post)
+        return {"message": existing_post}
