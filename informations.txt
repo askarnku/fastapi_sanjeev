@@ -11,3 +11,75 @@ class Post(BaseModel):
     content: str
     published: bool = True
     rating: Optional[int] = None
+
+
+-------Postgres Docker data--------
+created  /Users/askarmamytov/.postgres_docker  directory to put data
+
+docker run -d \
+--name fastapi-postgres \
+-e POSTGRES_PASSWORD=password \
+-v /Users/askarmamytov/.postgres_docker:/var/lib/postgresql/data \
+-p 5432:5432 \
+postgres-fastapi
+
+Once running, we can use docker bash to login:
+docker exec -it 05b5 /bin/bash 
+
+psql -h localhost -p 5432 -U postgres
+
+-------------
+how to connect to DB
+
+import psycopg2
+from psycopg2.extras import RealDictCursor ---> this is for mapping column names with values, otherwise it just gives data without column names
+
+then create connection:
+
+while True: --> let the while loop for several times because of latancy
+    try:
+        conn = psycopg2.connect(
+            host="localhost",
+            database="fastapi",
+            user="postgres",
+            password="password",
+            cursor_factory=RealDictCursor,
+        )
+        cursor = conn.cursor()
+        print("DB connected")
+        break
+    except Exception as error:
+        print("Connection failed")
+        print(error)
+        time.sleep(2)
+
+# fetching data from database:
+@app.get("/posts")
+def root():
+    cursor.execute(""" SELECT * FROM posts """) --> this executes query
+    posts = cursor.fetchall()                   --> this saves executed query into 'posts'
+    return {"data": posts}
+
+
+this is posting data into database:
+@app.post("/posts", status_code=status.HTTP_201_CREATED)
+def create_posts(post: Post):
+    cursor.execute(
+        """ INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING *""",
+        (post.title, post.content, post.published),
+    )
+    new_post = cursor.fetchone()
+
+    conn.commit()
+    return {"data": new_post}
+
+fetching one database record with condintion (in this case where id == 1):
+@app.get("/posts/{id}")
+def get_post(id: int):
+    cursor.execute(""" SELECT * FROM posts WHERE id = %s""", (id,))
+    post = cursor.fetchall()
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="post not found"
+        )
+    return {"post_detail": post}
