@@ -1,4 +1,5 @@
 # pydentic schemas
+from typing import Optional
 import pydantic
 from pydantic import EmailStr
 from datetime import datetime
@@ -31,3 +32,17 @@ class UserCreate(pydantic.BaseModel):
 class UserOut(pydantic.BaseModel):
     email: EmailStr
     created_at: datetime
+
+
+class UserLogin(pydantic.BaseModel):
+    email: EmailStr
+    password: str
+
+
+class Token(pydantic.BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(pydantic.BaseModel):
+    id: Optional[str] = None
