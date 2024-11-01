@@ -5,25 +5,6 @@ from pydantic import EmailStr
 from datetime import datetime
 
 
-class PostBase(pydantic.BaseModel):
-    title: str
-    content: str
-    published: bool = True
-
-
-class PostCreate(PostBase):
-    pass
-
-
-# Pydentic model for servers response
-class ResponsePost(PostBase):
-    id: int
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
 class UserCreate(pydantic.BaseModel):
     email: EmailStr
     password: str
@@ -37,6 +18,28 @@ class UserOut(pydantic.BaseModel):
 class UserLogin(pydantic.BaseModel):
     email: EmailStr
     password: str
+
+
+class PostBase(pydantic.BaseModel):
+    title: str
+    content: str
+    published: bool = True
+    owner_id: int
+    owner: UserOut
+
+
+class PostCreate(PostBase):
+    pass
+
+
+# Pydentic model for servers response
+class ResponsePost(PostBase):
+    id: int
+    created_at: datetime
+    owner_id: int
+
+    class Config:
+        from_attributes = True
 
 
 class Token(pydantic.BaseModel):

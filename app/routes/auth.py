@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from .. import database, schema, models, utils, oauth2
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 
-
 router = APIRouter(tags=["Authentication"])  # potential point-of-break to remember
 
 

@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, status, HTTPException, Response
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 from .. import schema, models
 from ..database import get_db
 from ..utils import pwd_context
+from ..oauth2 import get_current_user
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -29,7 +30,11 @@ def create_user(user: schema.UserCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/{id}", status_code=status.HTTP_200_OK, response_model=schema.UserOut)
-def get_user(id: int, db: Session = Depends(get_db)):
+def get_user(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: int = Depends(get_current_user),
+):
     user = db.query(models.Users).filter(models.Users.id == id).first()
     if user is None:
         raise HTTPException(
