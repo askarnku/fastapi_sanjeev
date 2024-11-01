@@ -1,9 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from decouple import config
 
+SQLACHEMY_DATABASE_URL = config("SQLACHEMY_DATABASE_URL")
 
-SQLACHEMY_DATABASE_URL = "postgresql://postgres:password@localhost/fastapi"
 
 engine = create_engine(SQLACHEMY_DATABASE_URL)
 
