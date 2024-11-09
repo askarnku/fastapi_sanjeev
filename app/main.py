@@ -4,6 +4,7 @@ from . import models
 from .database import engine
 from .routes import posts, users, auth
 
+
 models.Base.metadata.create_all(bind=engine)
 
 
