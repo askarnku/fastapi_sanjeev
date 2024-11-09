@@ -1,7 +1,7 @@
 # pydentic schemas
 from typing import Optional
 import pydantic
-from pydantic import EmailStr
+from pydantic import EmailStr, Field, conint
 from datetime import datetime
 
 
@@ -49,3 +49,8 @@ class Token(pydantic.BaseModel):
 
 class TokenData(pydantic.BaseModel):
     id: Optional[str] = None
+
+
+class Vote(pydantic.BaseModel):
+    post_id: int
+    dir: int = Field(..., le=1)

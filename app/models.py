@@ -43,6 +43,3 @@ class Vote(Base):
     post_id = Column(
         Integer, ForeignKey("posts.id", ondelete="CASCADE"), primary_key=True
     )
-
-    user = relationship("User", back_populates="votes")
-    post = relationship("Post", back_populates="votes")
