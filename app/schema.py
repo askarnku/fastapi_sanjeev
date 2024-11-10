@@ -14,6 +14,9 @@ class UserOut(pydantic.BaseModel):
     email: EmailStr
     created_at: datetime
 
+    class Config:
+        from_attributes = True
+
 
 class UserLogin(pydantic.BaseModel):
     email: EmailStr
@@ -27,6 +30,9 @@ class PostBase(pydantic.BaseModel):
     owner_id: int
     owner: UserOut
 
+    class Config:
+        from_attributes = True
+
 
 class PostCreate(PostBase):
     pass
@@ -37,6 +43,29 @@ class ResponsePost(PostBase):
     id: int
     created_at: datetime
     owner_id: int
+
+    class Config:
+        from_attributes = True
+
+
+"""
+{
+    "Post": {
+        "title": "Minneapolis Lakes",
+        "content": "Nature in the city.",
+        "id": 25,
+        "owner_id": 6,
+        "published": true,
+        "created_at": "2024-11-01T19:57:20.749679+00:00"
+    },
+    "votes": 0
+}
+"""
+
+
+class PostOut(pydantic.BaseModel):
+    Post: ResponsePost
+    votes: int
 
     class Config:
         from_attributes = True

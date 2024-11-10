@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
+from fastapi import status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
 from .. import schema, database, models, oauth2
 
@@ -41,7 +41,7 @@ def vote(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Vote not found"
             )
 
-    vote_query.delete(synchronize_session=False)
-    db.commit()
+        vote_query.delete(synchronize_session=False)
+        db.commit()
 
     return {"message": "successfully deleted vote"}

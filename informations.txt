@@ -50,3 +50,8 @@ Now it strictly abides by fields defined in pydentic ResponsePost.
 One caveat: When returning list of ORM models: Ex: /get_posts --> return several models, we need to convert response_model to return list.
 It is imported: from typing import List
 @app.get("/posts", response_model=List[schemas.ResponsePost])
+
+
+Alemic - DataBase Migration tool
+DB migration tool allows us to incrementally track changes database schema and rollback changes to any point in time.
+It is same as git that allows to incrementally add code changes and revert back when necessary
